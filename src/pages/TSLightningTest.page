@@ -1,0 +1,46 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">    
+
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">    
+
+<head>
+  <title>Account Merge</title>
+  <apex:stylesheet value="{!URLFOR($Resource.slds, 'slds/assets/styles/salesforce-lightning-design-system.css')}" />
+</head>    
+
+<body>    
+  <!-- REQUIRED SLDS WRAPPER -->
+  <div class="slds">    
+    <!-- MASTHEAD -->
+    <h1 class="slds-text-heading--label slds-m-bottom--small">Account Merge</h1>
+    <!-- / MASTHEAD -->    
+
+    <!-- PRIMARY CONTENT WRAPPER -->
+    <div class="slds-grid slds-grid--pull-padded">   
+    <div class="slds-col--padded"> 
+     <div class="slds-form-element">
+      <label class="slds-form-element__label" for="aaaSearchInput">AAA Number</label>
+      <div class="slds-form-element__control">
+        <input id="aaaSearchInput" class="slds-input" type="text" placeholder="Please enter a AAA number.." />
+      </div>
+      <button class="slds-button slds-button--brand">Search</button>
+    </div>
+      </div>
+
+      <div class="slds-col--padded">
+        <div class="slds-form-element">
+          <label class="slds-form-element__label" for="aaaSearchInput">AAA Number</label>
+          <div class="slds-form-element__control">
+            <input id="aaaSearchInput" class="slds-input" type="text" placeholder="Please enter a AAA number.." />
+          </div>
+          <button class="slds-button slds-button--brand">Search</button>
+        </div>
+      </div>
+    </div>
+    <!-- / PRIMARY CONTENT WRAPPER -->    
+
+  </div>
+  <!-- / REQUIRED SLDS WRAPPER -->    
+
+</body>
+</html>
+</apex:page>

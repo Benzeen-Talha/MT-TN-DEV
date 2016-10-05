@@ -1,0 +1,975 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0"  controller="BulkOperationsController" extensions="InputLookupAuraController">    
+
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">   
+<apex:includeScript value="{!URLFOR($Resource.jQuery, '/js/jquery-3.1.1.min.js')}"  />
+ <apex:includeLightning /> 
+  <apex:includeScript value="/lightning/lightning.out.js"/>  
+<head>
+  <title>Bulk Operations</title>
+    
+  <apex:stylesheet value="{!URLFOR($Resource.slds, 'slds/assets/styles/salesforce-lightning-design-system.css')}" />
+  </head>    
+
+  <apex:remoteObjects >
+    <apex:remoteObjectModel name="Relationship__c"  fields="Id,SUPPLIER_NAME__c,BUYER_NAME__c,RTBContactName__c,Authorisation_Contact_for_RTB__c,On_Hold_Contact_Name__c,Authorisation_Contact_for_On_Hold__c,Supplier_AAA__c,Supplier_Account_Name__c">
+     <apex:remoteObjectField name="CAMPAIGN_NAME__c" jsShorthand="Campaign"/>
+       <apex:remoteObjectField name="Campaign_Status__c" jsShorthand="RelationshipStatus"/>
+        <apex:remoteObjectField name="RTBContact_Id__c" jsShorthand="RTBContactId"/> 
+     </apex:remoteObjectModel>
+  </apex:remoteObjects> 
+
+<body>  
+     
+  <!-- REQUIRED SLDS WRAPPER -->
+  <apex:form >
+
+ 
+  <div class="slds">    
+
+     
+         
+    <!-- PRIMARY CONTENT WRAPPER -->
+    <div class="slds-grid slds-grid--pull-padded">   
+    <div class="slds-col--padded" style="margin:10px;"> 
+     <form class="slds-form--inline">
+  
+      <div class="slds-form-element">
+      <br/>
+      </div>
+      
+      <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+              <input id="strCampaignName" class="slds-input" type="text" />
+        </div>
+            </div>
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <apex:commandButton styleclass="slds-button slds-button--brand" value="Search" onclick="query_CampaignRelationShips()" reRender="relationShipList" status="load-status" /> 
+          </div>
+        </div>
+      </div>        
+         
+         
+         
+       <apex:actionStatus id="load-status">
+        <apex:facet name="start">
+          <div class="slds">
+            <div class="slds-spinner_container" id="Spinnerload-status">
+             <div class="slds-spinner--brand slds-spinner slds-spinner--medium" aria-hidden="false" role="alert">
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+            </div>
+          </div>
+        </div>
+        </apex:facet>  
+      </apex:actionStatus>
+
+
+      <br/>
+
+
+    </form>
+      </div>
+    </div>
+    <!-- / PRIMARY CONTENT WRAPPER -->    
+    <!-- PRIMARY CONTENT WRAPPER -->
+
+
+
+    <div class="slds-container--center slds-container--xlarge">   
+
+
+  <br/><br/>
+
+
+  <section class="slds-card__body">
+      
+<form name="relationshipForm">
+
+        
+      <div class="slds-scrollable--x">
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" name="relationShipTable">
+          <tbody >
+            <tr class="slds-hint-parent">        
+              <div id="relationShipList" class="slds-p-vertical--medium"/>                 
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    
+  </form>
+
+    </section>
+
+<!--
+<div class="slds-box slds-theme--info">
+  <p><strong>Relationships to update</strong>
+  </p>
+
+</div>
+-->
+
+  <div class="slds-grid slds-grid--pull-padded" width="100%">   
+    <div class="slds-col--padded" style="margin:5px;" width="50%"> 
+        <article class="slds-card slds-card--narrow">
+          <header class="slds-card__header slds-grid">
+            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+              <div class="slds-media__figure">
+                <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                  <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#contact"></use>
+                </svg>
+              </div>
+              <div class="slds-media__body slds-truncate">
+                <h2>
+                  <a href="javascript:void(0);" class="slds-text-link--reset">
+                    <span class="slds-text-heading--medium" >Update Relationships Status</span>
+                  </a>
+                </h2>
+              </div>
+            </div>      
+          </header>
+          
+
+      <fieldset class="slds-form-element">
+      <legend class="slds-form-element__legend slds-form-element__label"></legend>
+      <div class="slds-form-element__control">
+        <div class="slds-radio--button-group">
+          <label class="slds-button slds-radio--button" for="RTBRadio" onclick="showRTB()">
+            <input name="radio" type="radio" id="RTBRadio" />
+            <span class="slds-radio--faux">Refer To Buyer</span>
+          </label>
+          <label class="slds-button slds-radio--button" for="OnHoldRadio" onclick="showOnHold()" >
+            <input name="radio" type="radio" id="OnHoldRadio" />
+            <span class="slds-radio--faux">On Hold</span>
+          </label>
+          <label class="slds-button slds-radio--button" for="NoPotentialRadio" onclick="showNoPotential()">
+            <input name="radio" type="radio" id="NoPotentialRadio" />
+            <span class="slds-radio--faux">Non Potential</span>
+          </label>
+        </div>
+      </div>
+    </fieldset>
+
+
+    <fieldset class="slds-form-element" id="RTBParameters" hidden="true">
+      <legend class="slds-form-element__legend slds-form-element__label"></legend>
+      
+
+      <div class="slds-form-element__control">
+         
+     
+        <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+  <label class="slds-form-element__label" for="select-RTB">Select a reason code</label>
+  <!--
+  <apex:inputField id="select-RTB" styleclass="slds-select" onClick="getStatusReason();" value="{!relationship.RTB_Reason_Code__c}"/>
+     -->       
+                <select id="select-RTB" class="slds-select" onChange="getStatusReason()">
+                <option></option>
+                <option>RTB055 - Request for Information</option>
+                <option>RTB056 - Contract renewal between Supplier/Buyer - For review</option>
+                <option>RTB057 - Interoperation - Request from partner required</option>
+                <option>RTB048 - No response to contacts available (3rd follow up)</option>
+                <option>RTB058 - Open supplier queries to be resolved with the Buyer</option>
+              </select>
+            
+        </div>
+            </div>
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+            <label class="slds-form-element__label" for="select-RTB">RTB Notes</label>
+           <input id="inputAddNotes" class="slds-lookup__search-input slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="true" aria-activedescendant="" placeholder=" Add Notes " onChange="getNotes()"/>  
+          </div>
+        </div>
+      </div> 
+
+          <div class="slds-form-element slds-lookup" data-select="single" data-scope="single">
+          <label class="slds-form-element__label" for="lookup-01">Authorisation Contact for RTB</label>
+          <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+              <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#search"></use>
+            </svg>
+         
+        <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <input id="authRTBContact" class="slds-lookup__search-input slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="true" aria-activedescendant="" placeholder="Search Contacts" onChange="()"/>   
+        </div>
+            </div>
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <apex:commandButton styleclass="slds-button slds-button--brand" value="Search Contact" onclick="query_AuthorisationContact()" reRender="rtbContactList" status="load-status" />   
+          </div>
+        </div>
+      </div>        
+                      
+         </div>
+      </div>
+        
+      <Form name="rtbContactList">   
+      <div class="slds-scrollable--x">
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" name="relationShipTable">
+          <tbody >
+            <tr class="slds-hint-parent">        
+              <div id="rtbContactList" class="slds-p-vertical--medium"/>                 
+            </tr>
+          </tbody>
+        </table>
+      </div>    
+    </Form>
+    </div>
+
+    </fieldset>
+
+      <!------- Non Potential---------------------------------------------- ---->
+
+
+    <fieldset class="slds-form-element" id="NoPotentialParameters" hidden="true">
+      <legend class="slds-form-element__legend slds-form-element__label">Parameters</legend>
+      <div class="slds-form-element__control">
+          <label class="slds-form-element__label" for="select-03">Select a reason code</label>
+          <div class="slds-form-element__control">
+            <div class="slds-select_container">
+              <select id="select-03" class="slds-select" onChange="getStatusReason()">
+                <option></option>  
+                <option>Already live on Tungsten Network with Buyer</option>
+                <option>Buyer entity is no longer trading (on stop)</option>
+                <option>Complex invoicing structure</option>
+                <option>Contract is finishing</option>
+                <option>Customer is transacting through another provider</option>
+              </select>
+            </div>
+          </div>
+
+        <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <input id="authRTBContact" class="slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="true" aria-activedescendant="" placeholder="Search Contacts" onChange="()"/>   
+        </div>
+        </div>
+        
+        <div class="slds-col">
+            <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <apex:commandButton styleclass="slds-button slds-button--brand" value="Search Contact" onclick="query_AuthorisationContact()" reRender="NoPotentialContactList" status="load-status" />   
+              </div>
+            </div>
+          </div>  
+        </div>
+
+        <div class="slds-scrollable--x">
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" name="NoPotentialContactList">
+          <tbody >
+            <tr class="slds-hint-parent">        
+              <div id="NoPotentialContactList" class="slds-p-vertical--medium"/>                 
+            </tr>
+          </tbody>
+        </table>
+      </div> 
+
+
+    </fieldset>
+
+       <!------- On Hold---------------------------------------------- ---->
+
+    <fieldset class="slds-form-element" id="OnHoldParameters" hidden="true">
+      <legend class="slds-form-element__legend slds-form-element__label"></legend>
+
+      <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+          <label class="slds-form-element__label" for="onHoldInput">On Hold Reason</label>
+            <input id="onHoldInput" class="slds-input" type="text" onChange="getStatusReason()" placeholder="Add reason" />
+        </div>
+            </div>
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">            
+             <label class="slds-form-element__label" for="OffHoldDate">Off Hold Date</label>
+             <apex:inputfield Styleclass="slds-input"  id="OffHoldDate" type="date" value="{!relationship.Off_Hold_Date__c}"/>
+          </div>
+        </div>
+      </div>  
+
+        <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <input id="authOnHoldContact" class="slds-input" type="text" aria-autocomplete="list" role="combobox" aria-expanded="true" aria-activedescendant="" placeholder="Search Contacts" onChange="()"/>   
+        </div>
+            </div>
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--center">
+             <apex:commandButton styleclass="slds-button slds-button--brand" value="Search Contact" onclick="query_AuthorisationContactOnHold()" reRender="onHoldContactList" status="load-status" />   
+          </div>
+        </div>
+      </div>  
+
+        <div class="slds-scrollable--x">
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" name="relationShipTable">
+          <tbody >
+            <tr class="slds-hint-parent">        
+              <div id="onHoldContactList" class="slds-p-vertical--medium"/>                 
+            </tr>
+          </tbody>
+        </table>
+      </div> 
+
+    </fieldset>
+
+        </article>
+      </div>
+  </div>
+ 
+       <div class="slds-grid">
+        <div class="slds-col">
+        <div class="slds-box slds-box--small slds-theme--shade slds-text-align--left">
+            <button class="slds-button slds-button--brand"  onclick="update_CampaignRelationShips()">Update Relationships</button>
+          </div>
+        </div>
+      </div>  
+
+
+    </div>
+<!--
+ </apex:pageBlockTable>
+
+    </apex:pageBlock>
+
+    -->
+    <!-- / PRIMARY CONTENT WRAPPER -->    
+
+  </div>
+
+</apex:form> 
+  <!-- / REQUIRED SLDS WRAPPER -->    
+  <apex:includeScript value="{!$Resource.Handlebars}"/>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript" language="javascript">
+
+  function closeModal(){
+    var y = document.getElementById('DialogBox');
+
+    y.hidden = true;
+
+  }
+
+     var RTBNotes
+     
+     var RTBReasonCode;
+     var NonPotentialReasonCode;
+     var OnHoldReasonCode;
+
+     var campaignStatus;
+     var y;
+     var X;
+     var w; 
+  
+    function getStatusReason() {
+      
+     if( y.hidden == false){
+    
+     
+      RTBReasonCode = '';
+      NonPotentialReasonCode = '';
+      OnHoldReasonCode = '';
+ 
+     RTBReasonCode = document.getElementById("select-RTB").value;       
+     alert('========RTBReasonCode======='+ RTBReasonCode);
+  
+       } else if( X.hidden == false){
+         
+          
+          RTBReasonCode = '';
+          NonPotentialReasonCode = '';
+          OnHoldReasonCode = '';
+          RTBNotes = ''; 
+        
+          OnHoldReasonCode = document.getElementById("onHoldInput").value;
+          alert('========OnHoldReasonCode======='+ OnHoldReasonCode);
+       } else if(w.hidden == false ){
+     
+          
+          RTBReasonCode = '';
+          NonPotentialReasonCode = '';
+          OnHoldReasonCode = '';
+
+          RTBNotes = ''; 
+      
+          NonPotentialReasonCode = document.getElementById("select-03").value;
+          alert('========NonPotentialReasonCode======='+ NonPotentialReasonCode);                                     
+       }
+    }
+      
+      function getNotes() {
+        if( y.hidden == false){
+           RTBNotes = '';               
+           RTBNotes = document.getElementById("inputAddNotes").value;    
+      alert('========RTBNotes======='+ RTBNotes);    
+       } else if( X.hidden == false){
+          RTBNotes = ''; 
+       alert('========RTBNotes======='+ RTBNotes);   
+       } else if(w.hidden == false ){
+          RTBNotes = ''; 
+          alert('========RTBNotes======='+ RTBNotes);                                   
+       }
+     
+    }
+
+  function showRTB(){
+    campaignStatus = '';  
+    campaignStatus = 'Refer To Buyer'; 
+  alert(campaignStatus);      
+    //var y = document.getElementById('RTBParameters');
+    y = document.getElementById('RTBParameters');
+    y.hidden = false;
+  
+      
+      // var X = document.getElementById('OnHoldParameters');    
+    X = document.getElementById('OnHoldParameters');  
+    X.hidden = true;
+    
+      // var w = document.getElementById('NoPotentialParameters');
+  w = document.getElementById('NoPotentialParameters');
+    w.hidden = true;
+  }
+
+  function showOnHold(){
+    campaignStatus = '';  
+  campaignStatus = 'On Hold';
+    alert(campaignStatus);  
+    //var y = document.getElementById('RTBParameters');
+  y = document.getElementById('RTBParameters');
+    y.hidden = true;
+
+    //var X = document.getElementById('OnHoldParameters');
+  X = document.getElementById('OnHoldParameters');
+    X.hidden = false;
+    
+    //var w = document.getElementById('NoPotentialParameters');
+    w = document.getElementById('NoPotentialParameters');  
+    w.hidden = true;
+  }
+
+
+  function showNoPotential(){
+    campaignStatus = '';  
+  campaignStatus = 'Non Potential';
+    alert(campaignStatus);
+    //var y = document.getElementById('RTBParameters');
+  y = document.getElementById('RTBParameters');
+    y.hidden = true;
+
+    // var X = document.getElementById('OnHoldParameters');
+  X = document.getElementById('OnHoldParameters');
+    X.hidden = true;
+    
+    //var w = document.getElementById('NoPotentialParameters');
+  w = document.getElementById('NoPotentialParameters');
+    w.hidden = false;
+  }
+
+
+
+      function campaignSearch() {
+        searchServer(
+          document.getElementById("strCampaignName").value
+          );
+  
+      }
+
+ 
+        var IdList = [];
+        var IdListUncommented = [];
+        function checkAll(formname, checktoggle){
+         
+         j$ = jQuery.noConflict();
+          
+      //  IdList.push("[");
+
+          alert('=====First Value =====' + formname +'=====Second Value =====' + checktoggle );
+        
+          if(checktoggle==true){
+              document.getElementById('checkall').style.display='none';
+              document.getElementById('uncheckall').style.display='block';
+          }
+        
+        else{
+          document.getElementById('checkall').style.display='block';
+          document.getElementById('uncheckall').style.display='none';
+        }
+
+        var checkboxes = new Array();
+        var selectedIds = new Array();
+       
+        
+        checkboxes = document[formname].getElementsByTagName('input');
+     
+        if(IdList.length == 0 ){
+          for (var i=0; i<checkboxes.length; i++)  {      
+                  if (checkboxes[i].type == 'checkbox'){
+                      checkboxes[i].checked = checktoggle;     
+            //  alert('===========checkboxes========'+checkboxes[i].value);     
+          } 
+                if(checkboxes[i].value !='on' &&  checkboxes[i].value !== null){
+                IdList.push(checkboxes[i].value);
+                IdListUncommented.push(checkboxes[i].value);   
+                    //  IdListUncommented.replace (/'/g,'');    
+             }     
+           
+        }
+      } else {
+             for (var i=0; i<checkboxes.length; i++)  {      
+                    if (checkboxes[i].type == 'checkbox'){
+                      checkboxes[i].checked = checktoggle;     
+            //  alert('===========checkboxes========'+checkboxes[i].value);     
+            } 
+          }
+           IdList = []; 
+        }
+
+    alert('===========selectedIds========'+IdList);
+            // var idString = JSON.stringify(IdListUncommented);   
+            //idString.replace(/'/g,'"');    
+            
+        for (var i = 0; i < IdListUncommented.length; i++) {
+        IdListUncommented[i] = IdListUncommented[i].replace(/'/g, "");
+      }        
+    alert('===========selectedIds uncommented========'+IdListUncommented);        
+      
+    } 
+
+     var singleClickListRelations = [];
+     function singleClickListRelations(formname, checkboxname){ 
+
+      alert(formname);
+        var checkboxes = new Array();
+       
+        checkboxes = document[formname].getElementsByTagName('input');
+        if(IdList.length == 0 ){
+          IdList = [];
+           for (var i=0; i<checkboxes.length; i++)  {  
+               if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true){
+                singleClickListRelations.push(checkboxes[i].value);
+            }
+          }
+          alert('===========Selected Contact Ids'+ contactIdList_RTB);
+        }else{
+            IdList = [];
+            for (var i=0; i<checkboxes.length; i++)  {  
+
+               if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true){
+                singleClickListRelations.push(checkboxes[i].value);
+            }
+          }
+          alert('===========Single  Contact Id List '+ singleClickListRelations);
+        }
+
+          alert('===========Selected Contact Id List'+ singleClickListRelations);       
+      }
+
+
+    var contactIdList_RTB = [];
+     function checkRTBcontactforId(formname, checkboxname){ 
+
+      alert(formname);
+        var checkboxes = new Array();
+        checkboxes = document[formname].getElementsByTagName('input');       
+        if(contactIdList_RTB.length == 0 ){  
+          
+          contactIdList_RTB = [];
+
+           for (var i=0; i<checkboxes.length; i++) {  
+               if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true){
+                contactIdList_RTB.push(checkboxes[i].value);
+                 alert('===========Selected Contact Ids'+ contactIdList_RTB);
+            }
+          }       
+        }else{
+            
+            for (var i=0; i<checkboxes.length; i++)  {                  
+
+               if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked == true){
+                contactIdList_RTB = [];               
+                contactIdList_RTB.push(checkboxes[i].value);
+            }
+          }
+          alert('===========Selected Contact Ids'+ contactIdList_RTB);
+        }
+
+          alert('===========Selected Contact Ids'+ contactIdList_RTB);       
+      }
+
+
+
+
+
+        var contactCheckbox_RTB;
+        var contactCheckbox_OnHold;   
+        
+        function checkContactId(){
+        contactCheckbox_OnHold = '';
+        contactCheckbox_RTB = document.getElementById("idContactCheckBox").value;
+     
+          alert('=====contactCheckbox_RTB======'+contactCheckbox_RTB);
+
+        }  
+
+        function checkContactId_OnHold(){
+        contactCheckbox_RTB = '';
+        contactCheckbox_OnHold = document.getElementById("idContactCheckBox").value;
+     
+
+          alert('=====contactCheckbox_OnHold======'+contactCheckbox_OnHold);
+
+        }  
+
+
+
+
+ var insale_radio = document.getElementById("insale_radio").value;
+
+ 
+ function query_CampaignRelationShips() {
+  var searchString = document.getElementById("strCampaignName").value + '%';
+  var inSale = 'In Sales';
+  var relationship = new SObjectModel.Relationship__c();
+  var outputDiv = document.getElementById("relationShipList");
+
+  //var searchString = 'Siemens FI - Managed Supplier Data';
+  alert('=====Value======>' + searchString);
+  
+   relationship.retrieve(     
+      { where: {
+     
+       SUPPLIER_NAME__c: {like: searchString}
+        //RelationshipStatus: {eq: filterbyStatus} 
+      },
+     limit: 2000 
+   },
+
+      function(error, records) {
+      
+          if (error) {
+                alert(error.message);
+          } else {
+        
+        var accountIcon = '<span class="slds-icon__container slds-icon-standard-account">';
+       
+        accountIcon += '<svg aria-hidden="true" class="slds-icon">';     
+        accountIcon += '</svg><span class="slds-assistive-text">Success</span></span>';  
+    
+        var html = '<div  class="slds-scrollable--x"><table class="slds-table slds-table--bordered" name="relationshipinner">';  
+
+        html += '<tr><td>' +                      
+                            
+                   '<input type="checkbox" name="selectall" id="checkall" onclick="checkAll(\'relationshipForm\',true);" href="javascript:void();"/>' +
+                   
+                   // '<input type="checkbox" style="display:none;" id="uncheckall" value="" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                     
+                    '<span class="slds-assistive-text">Select All</span>'+                
+ 
+                    '<input type="checkbox" style="display:none;" id="uncheckall" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                       
+                    '<span class="slds-assistive-text">deSelect All</span>'+                
+               
+                
+                    '</th>'+
+                    
+                    '</td>';
+              //  html += '<th scope="col"><label>Id</label></th>'; 
+        html += '<th scope="col">Details</th>';            
+        html += '<th scope="col">SUPPLIER</th>'; 
+         html += '<th scope="col">Supplier AAA</th>'; 
+        html += '<th scope="col">BUYER</th>';
+        html += '<th scope="col">RELATIONSHIP STATUS</th>';       
+        html += '<th scope="col">CAMPAIGN</th></tr><tbody>';  
+        
+        records.forEach(function(record) {            
+            html += '<tr><td>' +                      
+                    '<label class="slds-checkbox">' +
+                   // '<input type="checkbox" name=\'check[]\' value="'+'\''+record.get("Id")+'\'' +'"/>' +
+                   '<input type="checkbox" name="idCheckBox""  value="'+'\''+record.get("Id")+'\'' +'"/>' +
+                    '<span class="slds-checkbox--faux"></span>'+
+                    '<span class="slds-assistive-text">Select</span>'+
+                    '</label>'+
+                    '</th>'+
+                    '</td>';
+
+            //  html += '<div ><td><label>' + record.get("Id") + '</label></td>'; 
+           // html += '<td><a href="/apex/SuccessPage?id='+(record.get("Id"))+'"'+ '>'+record.get("Name") +'</a></td>';
+            html += '<td><a target="_blank" href="/'+(record.get("Id"))+'"'+ '>' + 'View' + '</a></td>';
+            html += '<td>' + record.get("SUPPLIER_NAME__c") + '</td>';
+            html += '<td>' + record.get("Supplier_AAA__c") + '</td>';
+            html += '<td>' + record.get("BUYER_NAME__c") + '</td>';
+            html += '<td>' + record.get("RelationshipStatus") + '</td>';
+            html += '<td>' + record.get("Campaign") + '</td></tr>';
+        });
+        html = html + '</tbody></table></div>';
+        outputDiv.innerHTML = html;
+      }
+    }
+  );
+}
+
+  
+ 
+   function query_AuthorisationContact() {
+        var searchString = document.getElementById("authRTBContact").value + '%';
+        var relationship = new SObjectModel.Relationship__c();
+        var outputDivRTB = document.getElementById("rtbContactList");
+        var outputDivOnHold = document.getElementById("onHoldContactList");
+        var outputDivNoPotential = document.getElementById("NoPotentialContactList");
+
+        
+        alert('=====Value======>' + searchString);
+        var var_undefined = null; 
+       
+
+if(IdListUncommented.length >0){
+    relationship.retrieve(
+      
+      { where: {
+       RTBContactName__c: {like: searchString},
+       Id: {in: IdListUncommented}
+     //  RTBContactName__c: {ne: var_undefined}
+      },
+     limit: 100 
+   },
+
+      function(error, records) {
+      
+          if (error) {
+                alert(error.message);
+          } else {
+        
+        var accountIcon = '<span class="slds-icon__container slds-icon-standard-account">';      
+        accountIcon += '<svg aria-hidden="true" class="slds-icon">';     
+        accountIcon += '</svg><span class="slds-assistive-text">Contacts</span></span>';    
+
+        var html = '<div  class="slds-scrollable--x"><table class="slds-table slds-table--bordered" name="relationshipinner">';  
+
+        html += '<tr><td>' +                                              
+                  // '<input type="checkbox" name="selectall" id="checkall" onclick="checkAll(\'relationshipForm\',true);" href="javascript:void();"/>' +
+                   
+                   // '<input type="checkbox" style="display:none;" id="uncheckall" value="" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                     
+                   '<span class="slds-assistive-text">Select All</span>'+                
+                //    '<input type="checkbox" style="display:none;" id="uncheckall" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                       
+                    '<span class="slds-assistive-text">deSelect All</span>'+                           
+                    '</th>'+             
+                    '</td>';
+                  //  html += '<th scope="col"><label>Id</label></th>';      
+                  html += '<th scope="col">Contact Name</th>';  
+                  html += '<th scope="col">Supplier Name</th>';  
+                  html += '<th scope="col">Supplier Account</th>'; 
+               //   html += '<th scope="col">Id</th></tr><tbody>';  
+        
+        records.forEach(function(record) {
+            
+            html += '<tr><td>' +                      
+                  // '<input type="checkbox" name=\'check[]\' value="'+'\''+record.get("Id")+'\'' +'"/>' +
+    '<input type="checkbox" id="idContactCheckBox" onclick="checkRTBcontactforId (\'rtbContactList\',\'idContactCheckBox\');" value="'+record.get("Authorisation_Contact_for_RTB__c") +'"/>' +
+                    '<span class="slds-checkbox--faux"></span>'+
+                    '<span class="slds-assistive-text">Select</span>'+
+                    '</label>'+
+                    '</th>'+
+                    '</td>';
+
+            //  html += '<div ><td><label>' + record.get("Id") + '</label></td>'; 
+            html += '<td>' + record.get("RTBContactName__c") + '</td>';
+            html += '<td>' + record.get("SUPPLIER_NAME__c") + '</td>';
+            html += '<td>' + record.get("Supplier_Account_Name__c") + '</td></tr>';
+           // html += '<td>' + record.get("Authorisation_Contact_for_RTB__c") + '</td></tr>';
+        });
+        html = html + '</tbody></table></div>';
+        outputDivRTB.innerHTML = html;
+      //  outputDivOnHold.innerHTML = html;
+       // outputDivNoPotential.innerHTML = html;
+
+      }
+    }
+  );
+   }else{
+      alert('Please select atleast one supplier from search result');
+    }
+}
+
+
+  function query_AuthorisationContactOnHold() {
+        var searchStringOnHoldContact = document.getElementById("authOnHoldContact").value + '%';
+        var relationship = new SObjectModel.Relationship__c();
+     //   var outputDivRTB = document.getElementById("rtbContactList");
+        var outputDivOnHold = document.getElementById("onHoldContactList");
+       // var outputDivNoPotential = document.getElementById("NoPotentialContactList");
+
+        
+        alert('=====searchStringOnHoldContact======>' + searchStringOnHoldContact);
+        var var_undefined = null; 
+       
+
+if(IdListUncommented.length >0){
+    relationship.retrieve(
+      
+      { where: {
+       On_Hold_Contact_Name__c: {like: searchStringOnHoldContact},
+       Id: {in: IdListUncommented}
+     //  RTBContactName__c: {ne: var_undefined}
+      },
+     limit: 100 
+   },
+
+      function(error, records) {
+      
+          if (error) {
+                alert(error.message);
+          } else {
+        
+        var accountIcon = '<span class="slds-icon__container slds-icon-standard-account">';      
+        accountIcon += '<svg aria-hidden="true" class="slds-icon">';     
+        accountIcon += '</svg><span class="slds-assistive-text">Contacts</span></span>';    
+
+        var html = '<div  class="slds-scrollable--x"><table class="slds-table slds-table--bordered" name="relationshipinner">';  
+
+        html += '<tr><td>' +                                              
+                  // '<input type="checkbox" name="selectall" id="checkall" onclick="checkAll(\'relationshipForm\',true);" href="javascript:void();"/>' +
+                   
+                   // '<input type="checkbox" style="display:none;" id="uncheckall" value="" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                     
+                   '<span class="slds-assistive-text">Select All</span>'+                
+                //    '<input type="checkbox" style="display:none;" id="uncheckall" onclick="checkAll(\'relationshipForm\',false);" href="javascript:void();"/>' +                                                       
+                    '<span class="slds-assistive-text">deSelect All</span>'+                           
+                    '</th>'+             
+                    '</td>';
+                  //  html += '<th scope="col"><label>Id</label></th>';      
+                  html += '<th scope="col">Contact Name</th>';  
+                  html += '<th scope="col">Supplier Name</th>';  
+                  html += '<th scope="col">Supplier Account</th>'; 
+               //   html += '<th scope="col">Id</th></tr><tbody>';  
+        
+        records.forEach(function(record) {
+            
+            html += '<tr><td>' +                      
+                  // '<input type="checkbox" name=\'check[]\' value="'+'\''+record.get("Id")+'\'' +'"/>' +
+    '<input type="checkbox" id="idContactCheckBox" onclick="checkContactId_OnHold();" value="'+record.get("Authorisation_Contact_for_On_Hold__c") +'"/>' +
+                    '<span class="slds-checkbox--faux"></span>'+
+                    '<span class="slds-assistive-text">Select</span>'+
+                    '</label>'+
+                    '</th>'+
+                    '</td>';
+
+            //  html += '<div ><td><label>' + record.get("Id") + '</label></td>'; 
+            html += '<td>' + record.get("On_Hold_Contact_Name__c") + '</td>';
+            html += '<td>' + record.get("SUPPLIER_NAME__c") + '</td>';
+            html += '<td>' + record.get("Supplier_Account_Name__c") + '</td></tr>';
+           // html += '<td>' + record.get("Authorisation_Contact_for_RTB__c") + '</td></tr>';
+        });
+        html = html + '</tbody></table></div>';
+        //outputDivRTB.innerHTML = html;
+        outputDivOnHold.innerHTML = html;
+        //outputDivNoPotential.innerHTML = html;
+
+      }
+    }
+  );
+   }else{
+      alert('Please select atleast one supplier from search result');
+    }
+}
+      
+
+
+
+      
+      
+      
+ function update_CampaignRelationShips() {
+    
+    j$ = jQuery.noConflict();
+    var relationStatusUpdate =  document.getElementById("select-RTB").value;
+    var relationship = new SObjectModel.Relationship__c();
+    var relationShipStatus = 'On Hold';
+   // var contactId_Bulk = contactCheckbox_RTB;
+    
+    var contactId_Bulk = contactIdList_RTB.toString();
+        contactId_Bulk =  contactId_Bulk.replace(/\[/g, "") ;
+        ontactId_Bulk =  contactId_Bulk.replace(/\]/g, "") ;
+    
+    var listofIds = IdList.toString() ;
+    var listIdsQuoteRemoved =  listofIds.replace(/\'/g, "") ;
+
+     
+    alert('=====listIdsQuoteRemoved======>' + listIdsQuoteRemoved);
+    alert('=====contactId_Bulk======>' + contactId_Bulk);
+    alert('=====NonPotentialReasonCode======>' + NonPotentialReasonCode);
+          Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.BulkOperationsController.updateRelationshipStatus}',
+            IdList,
+            campaignStatus,
+            RTBNotes,
+            contactId_Bulk,
+            RTBReasonCode,
+            NonPotentialReasonCode,
+            OnHoldReasonCode,
+
+            function(result, event){
+                if (event.status) {
+                    // Get DOM IDs for HTML and Visualforce elements like this
+                    
+                    //   document.getElementById('remoteAcctId').innerHTML = result.Id
+                    //   document.getElementById(
+                    //      "{!$Component.block.blockSection.secondItem.acctNumEmployees}"
+                    //      ).innerHTML = result.NumberOfEmployees;
+
+                } else if (event.type === 'exception') {
+                    //  document.getElementById("responseErrors").innerHTML = 
+                    //     event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                } else {
+                   document.getElementById("responseErrors").innerHTML = event.message;
+                }
+                
+            }, 
+            
+            {escape: true}
+        );       
+    }
+            
+    </script>
+
+      
+      <script>
+      /*
+       $Lightning.use("c:BulkOperationApp", function() {
+         
+           $Lightning.createComponent(
+               "c:inputLookup",
+               { 
+                  sobjectType: "Contact",
+                Id:null
+                            
+              },
+                "lightningContactSearch",
+                function(cmp) {
+                
+                    alert('=======Component Created =====');
+                  }
+               
+              );
+            }
+         );  
+      
+          $Lightning.use("c:BulkOperationApp", function() {
+            $Lightning.createComponent(
+                "ui:inputText",
+                {  
+                    
+              },
+                "lightningContactId",
+                function(cmp) {
+                 
+                    alert('=======Component Created =====');
+                });
+            }); 
+      */
+    </script>
+   
+
+
+</body>
+</html>
+</apex:page>

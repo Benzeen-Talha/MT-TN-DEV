@@ -1,0 +1,611 @@
+<apex:page showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0" controller="AccountMergeController">    
+
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">    
+
+<head>
+  <title>Account Merge</title>
+  <apex:stylesheet value="{!URLFOR($Resource.slds, 'slds/assets/styles/salesforce-lightning-design-system.css')}" />
+  </head>    
+
+<body>    
+  <!-- REQUIRED SLDS WRAPPER -->
+  <div class="slds">    
+
+    <!-- PRIMARY CONTENT WRAPPER -->
+    <div class="slds-grid slds-grid--pull-padded">   
+    <div class="slds-col--padded" style="margin:10px;"> 
+     <form class="slds-form--inline">
+      <div class="slds-form-element">
+        <label class="slds-form-element__label" for="aaaNumberInput">AAA Number</label>
+        <div class="slds-form-element__control">
+          <input id="aaaNumberInput" class="slds-input" type="text" />
+        </div>
+      </div>
+      <div class="slds-form-element">
+        <button class="slds-button slds-button--brand" type="button" onclick="search()">Search</button>
+      </div>
+    </form>
+      </div>
+    </div>
+    <!-- / PRIMARY CONTENT WRAPPER -->    
+
+    <div id="failure" hidden="true" >
+      <div>
+        <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+          <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+            <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+              <h2 class="slds-text-heading--medium" id="prompt-heading-id">Error</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium">
+              <div id="errorMessageText">
+                
+              </div>
+            </div>
+            <div class="slds-modal__footer slds-theme--default">
+              <button class="slds-button slds-button--neutral" onclick="closeErrorMessage()">Ok</button>
+            </div>
+          </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+      </div>
+    </div>
+
+    <div id="success" hidden="true" >
+      <div>
+        <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+          <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+            <div class="slds-modal__header slds-theme--success slds-theme--alert-texture">
+              <h2 class="slds-text-heading--medium" id="prompt-heading-id">Success</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium">
+              <div id="successMessageText">
+                
+              </div>
+            </div>
+            <div class="slds-modal__footer slds-theme--default">
+              <button class="slds-button slds-button--neutral" onclick="closeSuccessMessage()">Ok</button>
+
+            </div>
+          </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+      </div>
+    </div>
+
+    <div id="infoPrompt" hidden="true" >
+      <div>
+        <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+          <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+            <div class="slds-modal__header slds-theme--info slds-theme--alert-texture">
+              <h2 class="slds-text-heading--medium" id="prompt-heading-id">Warning</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium">
+              <div id="infoPromptMessageText">
+                
+              </div>
+            </div>
+            <div class="slds-modal__footer slds-theme--default">
+              <button class="slds-button slds-button--neutral" onclick="closeInfoPromptMessage()">Cancel</button>
+              <button class="slds-button slds-button--neutral" onclick="confirmMerge()">Continue with merge</button>
+            </div>
+          </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+      </div>
+    </div>
+
+    <!-- PRIMARY CONTENT WRAPPER -->
+    <div class="slds-container--center slds-container--xlarge">   
+
+      <table class="slds-table slds-table--bordered slds-table--fixed-layout" role="grid">
+  <thead>
+    <tr class="slds-text-heading--label">
+      <th class="slds-is-sortable slds-is-resizable" scope="col" aria-label="Opportunity Name">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Opportunity Name">Actions</span>
+          <div class="slds-icon_container">
+            <svg aria-hidden="true" class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon">
+              <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+          </div>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+        <div class="slds-resizable">
+          <label for="cell-resize-handle-50" class="slds-assistive-text">Actions column width</label>
+          <input class="slds-resizable__input slds-assistive-text" type="range" min="20" max="1000" id="cell-resize-handle-50" />
+          <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+          </span>
+        </div>
+      </th>
+
+
+
+
+
+      <th class="slds-is-sortable slds-is-resizable" scope="col" aria-label="Opportunity Name">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Opportunity Name">AAA Number</span>
+          <div class="slds-icon_container">
+            <svg aria-hidden="true" class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon">
+              <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+          </div>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+        <div class="slds-resizable">
+          <label for="cell-resize-handle-50" class="slds-assistive-text">AAA Number column width</label>
+          <input class="slds-resizable__input slds-assistive-text" type="range" min="20" max="1000" id="cell-resize-handle-50" />
+          <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+          </span>
+        </div>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable" scope="col" aria-label="Account Name">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Account Name">Account Name</span>
+          <div class="slds-icon_container">
+            <svg aria-hidden="true" class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon">
+              <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+          </div>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+        <div class="slds-resizable">
+          <label for="cell-resize-handle-51" class="slds-assistive-text">Account Name column width</label>
+          <input class="slds-resizable__input slds-assistive-text" type="range" min="20" max="1000" id="cell-resize-handle-51" />
+          <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+          </span>
+        </div>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable" scope="col" aria-label="Close Date">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Close Date">VAT Registration Number</span>
+          <div class="slds-icon_container">
+            <svg aria-hidden="true" class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon">
+              <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+          </div>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+        <div class="slds-resizable">
+          <label for="cell-resize-handle-52" class="slds-assistive-text">VAT Registration Number column width</label>
+          <input class="slds-resizable__input slds-assistive-text" type="range" min="20" max="1000" id="cell-resize-handle-52" />
+          <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+          </span>
+        </div>
+      </th>
+
+      <th class="slds-is-sortable slds-is-resizable" scope="col" aria-label="Close Date">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" >Account Status</span>
+          <div class="slds-icon_container">
+            <svg aria-hidden="true" class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon">
+              <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+          </div>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+        <div class="slds-resizable">
+          <label for="cell-resize-handle-52" class="slds-assistive-text">Account Status column width</label>
+          <input class="slds-resizable__input slds-assistive-text" type="range" min="20" max="1000" id="cell-resize-handle-52" />
+          <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+          </span>
+        </div>
+      </th>
+
+
+
+
+    </tr>
+  </thead>
+  <tbody hidden="true" id="resultsTableBody">
+    
+  </tbody>
+</table> 
+
+
+  <br/><br/>
+<div class="slds-box slds-theme--info">
+  <p><strong>Accounts to merge</strong>
+  </p>
+
+</div>
+
+  <div class="slds-grid slds-grid--pull-padded" width="100%">   
+    <div class="slds-col--padded" style="margin:5px;" width="50%"> 
+        <article class="slds-card slds-card--narrow">
+          <header class="slds-card__header slds-grid">
+            <div class="slds-media slds-media--center slds-has-flexi-truncate">
+              <div class="slds-media__figure">
+                <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                  <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#contact"></use>
+                </svg>
+              </div>
+              <div class="slds-media__body slds-truncate">
+                <h2>
+                  <a href="javascript:void(0);" class="slds-text-link--reset">
+                    <span class="slds-text-heading--medium" >Master: </span>
+                  </a>
+                </h2>
+              </div>
+            </div>
+            <div class="slds-no-flex">
+            </div>
+          </header>
+          <div class="slds-card__body slds-text-align--left" style="margin:5px;">
+              <dl>
+                <dt class="slds-text-heading--label">Account Name:</dt>
+                <dd id="primaryAccountName"></dd>
+                <dt class="slds-text-heading--label">Account Status:</dt>
+                <dd id="primaryAccountStatus"></dd>
+                <dt class="slds-text-heading--label">AAA Number:</dt>
+                <dd id="primaryAAANumber"></dd>
+                <dt class="slds-text-heading--label">VAT Registration Number:</dt>
+                <dd id="primaryVATNumber"></dd>
+                <dt class="slds-text-heading--label">Domain List:</dt>
+                <dd id="primaryDomain"></dd>
+              </dl>
+
+          </div>
+          
+        </article>
+      </div>
+
+
+      <div class="slds-col--padded" style="margin:5px;" width="50%"> 
+          <article class="slds-card slds-card--narrow">
+            <header class="slds-card__header slds-grid">
+              <div class="slds-media slds-media--center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+                  <svg aria-hidden="true" class="slds-icon slds-icon-standard-contact slds-icon--small">
+                    <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#contact"></use>
+                  </svg>
+                </div>
+                <div class="slds-media__body slds-truncate">
+                  <h2>
+                    <a href="javascript:void(0);" class="slds-text-link--reset">
+                      <span class="slds-text-heading--medium" >To Remove:</span>
+                    </a>
+                  </h2>
+                </div>
+              </div>
+              <div class="slds-no-flex">
+              </div>
+            </header>
+            <div class="slds-card__body slds-text-align--left" style="margin:10px;">
+              <div>
+                <div class="slds-text-heading--label">Account Name:</div>
+                <div id="secondaryAccountName"></div>
+                <div class="slds-text-heading--label">Account Status:</div>
+                <div id="secondaryAccountStatus"></div>
+                <div class="slds-text-heading--label">AAA Number:</div>
+                <div id="secondaryAAANumber"></div>
+                <div class="slds-text-heading--label">VAT Registration Number:</div>
+                <div id="secondaryVATNumber"></div>
+                <div class="slds-text-heading--label">Domain List:</div>
+                <div id="secondaryDomain"></div>
+              </div>
+            </div>
+          </article>
+      </div>
+  </div>
+
+  <div>
+    <button class="slds-button slds-theme--success" style="padding:5px;" onclick="merge()">Confirm and Merge</button>
+  </div>
+  
+
+
+    </div>
+    <!-- / PRIMARY CONTENT WRAPPER -->    
+
+  </div>
+
+  <!-- / REQUIRED SLDS WRAPPER -->    
+  <apex:includeScript value="{!$Resource.Handlebars}"/>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript">
+
+  
+
+
+
+  function search(){
+
+          j$ = jQuery.noConflict();
+
+          var input = document.getElementById('aaaNumberInput').value;
+
+          if(input.length == 0){
+            
+            showErrorMessage('Please enter a valid AAA Number');
+            
+          }else{
+
+
+
+          AccountMergeController.search(input,
+              function(result, event){
+                  if (event.status) {
+                    var resultsTable = '';
+
+                     result = j$.grep(result,function(n){ return n == 0 || n }); 
+
+                     console.log(result);
+
+                     if(result.length == 0){
+
+                     }
+
+                     for (var i = 0, l = result.length; i < l; i++) {
+    
+                      //var obj = data.messages[i];
+
+
+                      if(result[i].Name != undefined || result[i].Name != '' ||
+                        result[i].Name != null || typeof result[i].Name != 'undefined'
+                        ){
+                        
+                        resultsTable += '<tr class="slds-hint-parent" id="' + result[i].Name + 'row">';
+                        resultsTable += '<td role="gridcell" class="slds-cell-shrink" data-label="Select row">';
+                        resultsTable += '<div class="slds-button-group" role="group" style="padding:5px;">';
+                        resultsTable += '<button class="slds-button slds-theme--alt-inverse" style="padding:5px;" onclick="setPrimary(\'' + result[i].Name + '\')">Set Primary</button>';
+                        resultsTable += '<button class="slds-button slds-theme--warning" style="padding:5px;" onclick="setSecondary(\''+ result[i].Name +'\')">Set Secondary</button>';
+                        resultsTable += '</div></td>';
+                        resultsTable += '<th scope="row" data-label="AAA Number">';
+                        resultsTable += '<div class="slds-truncate">';
+                        resultsTable += result[i].Name ;
+                        resultsTable += '</div></th>';
+                        resultsTable += '<td role="gridcell" data-label="Account Name">';
+                        resultsTable += '<div class="slds-truncate">';
+                        resultsTable += result[i].Account__r.Name;
+                        resultsTable += '</div></td>';
+                        resultsTable += '<td role="gridcell" data-label="VAT Registration Number">';
+                        resultsTable += '<div class="slds-truncate">';
+                        resultsTable += result[i].Account__r.Vat_Registration_Number__c;
+                        resultsTable += '</div></td>';
+                        resultsTable += '<td role="gridcell" data-label="Account Status">';
+                        resultsTable += '<div class="slds-truncate">';
+                        resultsTable += result[i].Account__r.Account_Status__c;
+                        resultsTable += '</div></td></tr>';
+                      }
+                   }
+                      //console.log(resultsTable);
+                      document.getElementById('resultsTableBody').innerHTML = resultsTable;
+                   
+                  } else if (event.type == 'exception') {
+                     alert(event.message);
+                  } else {
+                     alert(event.message);
+                  }
+               }, 
+               {escape: true}
+          );
+
+          showResultsTable();
+
+        }
+
+
+  }
+
+ 
+
+  function setPrimary(primary){
+    j$ = jQuery.noConflict();
+    
+
+    AccountMergeController.setAAAPrimary(primary,
+              function(result, event){
+                  if (event.status) {
+                     console.log(result);
+
+                     document.getElementById('primaryAccountName').innerHTML = result.Account__r.Name;
+                     document.getElementById('primaryAAANumber').innerHTML = result.Name;
+                     document.getElementById('primaryAccountStatus').innerHTML = result.Account__r.Account_Status__c;
+                     document.getElementById('primaryVATNumber').innerHTML = result.Account__r.Vat_Registration_Number__c;
+                     document.getElementById('primaryDomain').innerHTML = result.Account__r.Domain_List__c;
+                     
+                     resetSearch();
+                     hideResultsTable();
+                     showSuccessMessage('Master account set.');
+
+                  } else if (event.type == 'exception') {
+                     alert(event.message);
+                  } else {
+                     alert(event.message);
+                  }
+               }, 
+               {escape: true}
+          );
+  }
+
+  function setSecondary(secondary){
+    j$ = jQuery.noConflict();
+    
+
+    AccountMergeController.setAAASecondary(secondary,
+              function(result, event){
+                  if (event.status) {
+                     console.log(result);
+
+                     document.getElementById('secondaryAccountName').innerHTML = result.Account__r.Name;
+                     document.getElementById('secondaryAAANumber').innerHTML = result.Name;
+                     document.getElementById('secondaryAccountStatus').innerHTML = result.Account__r.Account_Status__c;
+                     document.getElementById('secondaryVATNumber').innerHTML = result.Account__r.Vat_Registration_Number__c;
+                     document.getElementById('secondaryDomain').innerHTML = result.Account__r.Domain_List__c;
+                     
+                     resetSearch();
+                     hideResultsTable();
+                     showSuccessMessage('Account to be removed successfully set.');
+                  } else if (event.type == 'exception') {
+                     alert(event.message);
+                  } else {
+                     alert(event.message);
+                  }
+               }, 
+               {escape: true}
+          );
+  }
+
+
+  function merge(){
+
+          j$ = jQuery.noConflict();
+
+          var pDomain = document.getElementById('primaryDomain').value;
+          var sDomain = document.getElementById('secondaryDomain').value;
+
+
+          /*if(pDomain == null || pDomain == undefined || pDomain == ''){
+            showErrorMessage('Please select a master account.');
+          }
+          if(sDomain == null || sDomain == undefined || sDomain == ''){
+            showErrorMessage('Please select an account to remove.');
+          }*/
+          if(pDomain != sDomain){
+
+            showInfoPromptMessage('You are about to merge two accounts with different email domains. Are you sure you wish to continue?');
+          
+          }else{
+            confirmMerge();
+          }
+          
+          
+  }
+
+  function confirmMerge(){
+
+      AccountMergeController.mergeAccounts(
+              function(result, event){
+                  if (event.status) {
+                     console.log(result);
+
+                     if(result == 'The accounts were merged successfully!'){
+                        showSuccessMessage(result);
+                     }else{
+                      showErrorMessage(result);
+                     }
+                     
+                  } else if (event.type == 'exception') {
+                     alert(event.message);
+                  } else {
+                     alert(event.message);
+                  }
+               }, 
+               {escape: true}
+          );
+  }
+
+
+  function resetSearch(){
+    j$ = jQuery.noConflict();
+
+    j$('aaaNumberInput').val('');
+  
+  }
+
+
+
+  function hideResultsTable(){
+    var y = document.getElementById('resultsTableBody');
+
+    y.hidden = true;
+  }
+
+  function showResultsTable(){
+    var y = document.getElementById('resultsTableBody');
+
+    y.hidden = false;
+  }
+
+  function closeInfoPromptMessage(){
+    var y = document.getElementById('infoPrompt');
+
+    y.hidden = true;
+  }
+
+  function showInfoPromptMessage(message){
+    var y = document.getElementById('infoPrompt');
+
+    y.hidden = false;
+
+    var error = '';
+
+    error += '<p class="slds-section__title">';
+    error += message;
+    error += '</p>';
+
+    document.getElementById('infoPromptMessageText').innerHTML = error;
+
+  }
+
+
+  function closeErrorMessage(){
+    var y = document.getElementById('failure');
+
+    y.hidden = true;
+
+    resetSearch();
+  }
+
+  function showErrorMessage(message){
+    var y = document.getElementById('failure');
+
+    y.hidden = false;
+
+    var error = '';
+
+    error += '<p class="slds-section__title">';
+    error += message;
+    error += '</p>';
+
+    document.getElementById('errorMessageText').innerHTML = error;
+
+  }
+
+  function closeSuccessMessage(){
+    var y = document.getElementById('success');
+
+    y.hidden = true;
+  }
+
+  function showSuccessMessage(message){
+    var y = document.getElementById('success');
+
+    y.hidden = false;
+
+    var success = '';
+
+    success += '<p class="slds-section__title">';
+    success += message;
+    success += '</p>';
+
+    document.getElementById('successMessageText').innerHTML = success;
+
+  }
+
+
+  function cancelMerge(){
+     var y = document.getElementById('modalConfirm');
+
+    y.hidden = true;
+  }
+</script>
+
+
+
+
+
+</body>
+</html>
+</apex:page>

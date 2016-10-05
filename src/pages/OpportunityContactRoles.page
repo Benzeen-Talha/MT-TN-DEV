@@ -1,0 +1,39 @@
+<apex:page sidebar="false" showHeader="false" standardController="Opportunity" extensions="OpportunityContactRoleController">
+    <apex:form >
+        <apex:pageBlock mode="edit" 
+            helpTitle="Contact Roles Help"
+            helpUrl="https://help.salesforce.com/htviewhelpdoc?id=contactroles_edit.htm">
+            <apex:pageBlockTable value="{!contactRoleList}" var="ContactRole">
+                <apex:column >
+                    <apex:facet name="header">
+                        Action
+                    </apex:facet>
+                    <a href="/apex/ContactRoleEdit?id={!Opportunity.Id}" target="_top">Edit</a>
+                </apex:column>
+                <apex:column >
+           <apex:facet name="header">
+              Contact Name
+              </apex:facet>
+              <a href="/{!ContactRole.Contact.Id}" target="_top">{!ContactRole.Contact.Name}</a>
+           </apex:column>
+           <apex:column >
+           <apex:facet name="header">
+              Account Name
+           </apex:facet>
+          <a href="/{!ContactRole.Contact.Account.Id}" target="_top">{!ContactRole.Contact.Account.Name}</a>
+          </apex:column>
+                <apex:column value="{!ContactRole.Contact.Email}" headerValue="Email"/>
+                <apex:column value="{!ContactRole.Contact.Phone}" headerValue="Phone"/>
+                <apex:column value="{!ContactRole.Contact.Inactive__c}" headerValue="Inactive"/>
+                <apex:column value="{!ContactRole.Role}" headerValue="Role"/>              
+                <apex:column value="{!ContactRole.IsPrimary}" headerValue="Is Primary"/>          
+            </apex:pageBlockTable>    
+            <apex:pageBlockButtons location="top">
+                <!--
+                <input type="button" class="btn" value="New" target="_blank" onclick="javascript:location.replace('/p/opp/ContactRoleEditUi/e?oppid={!Opportunity.Id}&retURL=%2F{!Opportunity.Id}');"/>
+                -->
+                 <input type="button" class="btn" value="New" target="_blank" onclick="window.open('/apex/ContactRoleEdit?id={!Opportunity.Id}');"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>    
+    </apex:form>
+</apex:page>

@@ -1,0 +1,30 @@
+<apex:page standardcontroller="Opportunity" extensions="ContactRoleEditController" title="Contact Roles for">
+	<apex:form >
+		<apex:pageMessages />
+		<apex:pageBlock title="Contact Roles for {!opportunity.Name}" >
+			<apex:pageBlockButtons >
+				<apex:commandButton action="{!processCR}" value="Save" />
+				<apex:commandButton action="{!cancel}" value="Cancel"/>
+			</apex:pageBlockButtons>
+			<apex:pageBlockSection title="" collapsible="false">
+				<apex:pageBlockTable value="{!contactMap}" var="oppCR">
+					<apex:column headerValue="Is Primary?" >
+						<apex:inputCheckBox value="{!oppCR.isPrimary}" />
+					</apex:column>
+					<apex:column headerValue="Contact Name">
+						<apex:outputLabel value="{!oppCR.contact.Full_Name__c}" />
+					</apex:column>
+					<apex:column headerValue="is Sales Role">
+						<apex:inputCheckBox value="{!oppCR.isSalesRole}" />
+					</apex:column>
+					<apex:column headerValue="is Technical Role" >
+						<apex:inputCheckBox value="{!oppCR.isTechnicalRole}" />
+					</apex:column>
+					<apex:column headerValue="is Billing Role" >
+						<apex:inputCheckBox value="{!oppCR.isBillingRole}" />
+					</apex:column>
+				</apex:pageBlockTable>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

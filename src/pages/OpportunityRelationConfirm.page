@@ -1,0 +1,26 @@
+<apex:page standardController="Opportunity" extensions="OpportunityRelationConfirm">
+	<apex:form >
+		<apex:pageMessages />
+		<apex:pageBlock title="">
+			<apex:pageBlockButtons >
+				<apex:commandButton action="{!processRelation}" value="Confirm the Relations" />
+				<apex:commandButton action="{!cancel}" value="Cancel"/>
+			</apex:pageBlockButtons>
+			<apex:pageBlockSection columns="1">
+				<apex:pageBlockSectionItem >
+					<apex:pageBlockTable value="{!tRelList}" var="val">
+						<apex:column headerValue="IsSelected?">
+							<apex:inputcheckBox value="{!val.selected}" />
+						</apex:column>
+						<apex:column headerValue="Opportunity Name">
+							<apex:outputLabel value="{!val.relation.Name}" />
+						</apex:column>
+						<apex:column headerValue="Account Name">
+							<apex:outputLabel value="{!val.relation.Supplier_Account__r.Name}" />
+						</apex:column>
+					</apex:pageBlockTable>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>
